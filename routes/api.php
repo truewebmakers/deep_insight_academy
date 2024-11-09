@@ -1,72 +1,38 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
-use App\Http\Controllers\Api\HomeSliderController;
-use App\Http\Controllers\Api\OnboardingController;
-use App\Http\Controllers\Api\OTPController;
-use App\Http\Controllers\Api\ProductCategoryController;
-use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\ProductSizeController;
+use App\Http\Controllers\Api\MainCategoryController;
+use App\Http\Controllers\Api\PracticeController;
+use App\Http\Controllers\Api\SubCategoryController;
 use App\Http\Controllers\Api\UserController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-//user OTP
-Route::post('user/sendotp', [OTPController::class, 'sendOTP']);
-Route::post('user/verifyotp', [UserController::class, 'verifyOTP']);
-//admin
 Route::post('admin/login', [AdminController::class, 'adminLogin']);
-Route::post('admin/register', [AdminController::class, 'adminRegistration']);
+Route::prefix('admin')->group(function () {
+    //Practice Main Category
+    Route::post('practice/maincategory/add', [MainCategoryController::class, 'addMainCategory']);
+    Route::post('practice/maincategory/update', [MainCategoryController::class, 'updateMainCategory']);
+    Route::post('practice/maincategory/delete', [MainCategoryController::class, 'deleteMainCategory']);
+    Route::get('practice/maincategory/getall', [MainCategoryController::class, 'getAllMainCategories']);
 
-//admin sliders
-Route::post('admin/slider/add', [HomeSliderController::class, 'addSlider']);
-Route::post('admin/slider/delete', [HomeSliderController::class, 'deleteSlider']);
-//both
-Route::get('slider/getsliders', [HomeSliderController::class, 'getSliders']);
+    //Practice Sub Category
+    Route::post('practice/subcategory/add', [SubCategoryController::class, 'addSubCategory']);
+    Route::post('practice/subcategory/update', [SubCategoryController::class, 'updateSubCategory']);
+    Route::post('practice/subcategory/delete', [SubCategoryController::class, 'deleteSubCategory']);
+    Route::get('practice/subcategory/getall', [SubCategoryController::class, 'getAllSubCategoriesOfMainCategory']);
 
-//both
-Route::get('/onboarding/getonboardings', [OnboardingController::class, 'getOnboardings']);
-//admin
-Route::post('admin/onboarding/add', [OnboardingController::class, 'addOnboarding']);
-Route::post('admin/onboarding/update', [OnboardingController::class, 'updateOnboarding']);
-Route::post('admin/onboarding/delete', [OnboardingController::class, 'deleteOnboarding']);
+    //Practice
+    Route::post('practice/add', [PracticeController::class, 'addPractice']);
+    Route::post('practice/update', [PracticeController::class, 'updatePractice']);
+    Route::post('practice/delete', [PracticeController::class, 'deletePractice']);
+    Route::get('practice/getall', [PracticeController::class, 'getAllPracitcesBySubCategoryAdmin']);
+});
 
-//product category
-//admin
-Route::post('admin/productcategory/add', [ProductCategoryController::class, 'addProductCategory']);
-Route::post('admin/productcategory/update', [ProductCategoryController::class, 'updateProductCategory']);
-Route::post('admin/productcategory/delete', [ProductCategoryController::class, 'deleteProductCategory']);
-//both
-Route::get('productcategory/getallcategories', [ProductCategoryController::class, 'getAllProductCategories']);
-
-//product
-Route::post('admin/product/add', [ProductController::class, 'addProduct']);
-Route::post('admin/product/update', [ProductController::class, 'updateProduct']);
-Route::post('admin/product/delete', [ProductController::class, 'deleteProduct']);
-//customer
-Route::get('user/product/getproductsbycategory', [ProductController::class, 'getAllProductByCategoryCustomer']);
-Route::get('user/product/getbestsellers', [ProductController::class, 'getBestSeller']);
-Route::get('user/product/search', [ProductController::class, 'searchProduct']);
-//admin
-Route::get('admin/product/getproductsbycategory', [ProductController::class, 'getAllProductByCategoryAdmin']);
-
-//product size
-Route::post('admin/product/size/add', [ProductSizeController::class, 'addProductSize']);
-Route::post('admin/product/size/update', [ProductSizeController::class, 'updateProductSize']);
-Route::post('admin/product/size/delete', [ProductSizeController::class, 'deleteProductSize']);
-
-//profile
-Route::post('user/profile/update', [UserController::class, 'updateProfile']);
-
-
-//admin onboardings
-
-// Route::middleware('auth:api')->group(function () {
-//     Route::get('slider/getsliders', [HomeSliderController::class, 'getSliders']);
-// });
-
-// Route::middleware(['admin'])->group(function () {
-// // Route::middleware(['auth:admin', 'admin'])->group(function () {
-//     // Route::post('admin/slider/add', [HomeSliderController::class, 'addSlider']);
-// });
+Route::post('user/register', [UserController::class, 'signup']);
+Route::post('user/login', [UserController::class, 'login']);
+Route::get('user/categories/getall', [MainCategoryController::class, 'getAllMainCategoriesWithSubCategories']);
+Route::prefix('user')->middleware(['auth:user', 'scope:user'])->group(function () {
+    Route::get('practice/getall', [PracticeController::class, 'getAllPracitcesBySubCategoryUser']);
+    Route::get('practice/get', [PracticeController::class, 'getPracitceDetailsUser']);
+});
