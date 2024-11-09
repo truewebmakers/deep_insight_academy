@@ -103,6 +103,91 @@ class PracticeController extends Controller
         }
     }
 
+    public function updatePractice(Request $request,$id)
+    {
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'sub_category_id' => 'required|integer',
+            'q_num' => 'required|integer|min:1',
+            'audio' => 'file|mimes:mp3,wav',
+            'paragraph' => 'nullable|string',
+            'image' => 'nullable|string',
+            'is_short' => 'boolean|nullable',
+            'difficulty' => 'nullable|in:Easy,Medium,Hard',
+            'image_type' => 'nullable|in:Bar,Line,Pie,Flow,Table,Map,Pic,Comb',
+            'essay_type' => 'nullable|in:Dual Q,Y/N,Open Q',
+            'prepare_time' => 'nullable|date_format:H:i:s',
+            'test_time' => 'nullable|date_format:H:i:s',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status_code' => 400,
+                'message' => $validator->messages()
+            ], 400);
+        }
+        DB::beginTransaction();
+        try {
+            $sub_category = sub_category::findOrFail($request->sub_category_id);
+            $practice = practice::findOrFail($id);
+            $practice->title = trim($request->title);
+            $practice->q_num = $request->q_num;
+            $practice->sub_category_id = $sub_category->id;
+            $practice->main_category_id = $sub_category->main_category_id;
+            $practice->prepare_time = $request->prepare_time;
+            $practice->test_time = $request->test_time;
+            $practice->is_short = $request->is_short;
+            $practice->difficulty = $request->difficulty;
+            $practice->image_type = $request->image_type;
+            $practice->essay_type = $request->essay_type;
+            $practice->save();
+            if ($sub_category->content_type === 'image') {
+                if (!$request->filled('image')) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'message' => 'Image is required'
+                    ], 400);
+                }
+                $image = $this->decodeBase64Image($request->image);
+                $imageName = 'practice_' . $practice->id . '.' . $image['extension'];
+                $imagePath = 'public/practice/image/' . $imageName;
+                Storage::put($imagePath, $image['data']);
+
+                $practice->image = 'storage/app/public/practice/image/' . $imageName;
+            } else if ($sub_category->content_type === 'text') {
+                if (!$request->filled('paragraph')) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'message' => 'Paragraph is required'
+                    ], 400);
+                }
+                $practice->paragraph = $request->paragraph;
+            } else if ($sub_category->content_type === 'audio') {
+                if (!$request->hasFile('audio')) {
+                    return response()->json([
+                        'status_code' => 400,
+                        'message' => 'Audio is required'
+                    ], 400);
+                }
+                $audioFile = $request->file('audio');
+                $audioName = 'practice_' . $practice->id . '.' . $audioFile->getClientOriginalExtension();
+                $audioPath = 'public/practice/audio/' . $audioName;
+                Storage::put($audioPath, file_get_contents($audioFile));
+                $practice->audio = 'storage/app/public/practice/audio/' . $audioName;
+            }
+            $practice->save();
+            DB::commit();
+            return response()->json([
+                'status_code' => 200,
+                'message' => 'Practice update successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status_code' => 500,
+                'message' => 'Failed to update practice.'
+            ], 500);
+        }
+    }
     /**
      * Get All Practices by sub category
      */
@@ -205,5 +290,13 @@ class PracticeController extends Controller
                 'message' => 'Failed to retrieve practice.'
             ], 500);
         }
+    }
+    public function deletePractice(Request $request,$id)
+    {
+       $practice = practice::find($id)->delete();
+        return response()->json([
+            'status_code' => 200,
+            'message' => 'Practice delete successfully'
+        ], 200);
     }
 }

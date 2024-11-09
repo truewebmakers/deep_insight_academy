@@ -24,8 +24,8 @@ Route::prefix('admin')->group(function () {
 
     //Practice
     Route::post('practice/add', [PracticeController::class, 'addPractice']);
-    Route::post('practice/update', [PracticeController::class, 'updatePractice']);
-    Route::post('practice/delete', [PracticeController::class, 'deletePractice']);
+    Route::post('practice/update/{id}', [PracticeController::class, 'updatePractice']);
+    Route::post('practice/delete/{id}', [PracticeController::class, 'deletePractice']);
     Route::get('practice/getall', [PracticeController::class, 'getAllPracitcesBySubCategoryAdmin']);
 });
 
