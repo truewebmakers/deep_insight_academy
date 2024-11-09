@@ -228,21 +228,36 @@ class PracticeController extends Controller
      */
     public function getAllPracitcesBySubCategoryAdmin(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'sub_category_id' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return response()->json([
-                'status_code' => 400,
-                'message' => $validator->messages()
-            ], 400);
-        }
+        // $validator = Validator::make($request->all(), [
+        //     'sub_category_id' => 'required',
+        // ]);
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'status_code' => 400,
+        //         'message' => $validator->messages()
+        //     ], 400);
+        // }
+        // try {
+        //     $sub_category = sub_category::findOrFail($request->sub_category_id);
+        //     $practices = practice::where('sub_category_id', $sub_category->id)->where('disable', 0)->get();
+        //     return response()->json([
+        //         'status_code' => 200,
+        //         'data' => $practices,
+        //         'message' => 'Practices retrieved successfully'
+        //     ], 200);
+        // } catch (\Exception $e) {
+        //     return response()->json([
+        //         'status_code' => 500,
+        //         'message' => 'Failed to retrieve practices.'
+        //     ], 500);
+        // }
+
         try {
-            $sub_category = sub_category::findOrFail($request->sub_category_id);
-            $practices = practice::where('sub_category_id', $sub_category->id)->where('disable', 0)->get();
+            $sub_category = sub_category::with('categories')->get();
+           // $practices = practice::where('sub_category_id', $sub_category->id)->where('disable', 0)->get();
             return response()->json([
                 'status_code' => 200,
-                'data' => $practices,
+                'data' => $sub_category,
                 'message' => 'Practices retrieved successfully'
             ], 200);
         } catch (\Exception $e) {
