@@ -215,11 +215,11 @@ class PracticeController extends Controller
                 'message' => 'Practices retrieved successfully'
             ], 200);
         } catch (\Exception $e) {
-            print($e);
+            // print($e);
             return response()->json([
-                'status_code' => 500,
+                'status_code' => 404,
                 'message' => 'Failed to retrieve practices.'
-            ], 500);
+            ], 404);
         }
     }
 
