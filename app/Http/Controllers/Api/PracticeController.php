@@ -193,6 +193,12 @@ class PracticeController extends Controller
      */
     public function getAllPracitcesBySubCategoryUser(Request $request)
     {
+        return response()->json([
+            'status_code' => 400,
+            'message' => $request->all()
+        ], 400);
+
+
         $validator = Validator::make($request->all(), [
             'sub_category_id' => 'required',
         ]);
@@ -218,7 +224,7 @@ class PracticeController extends Controller
             // print($e);
             return response()->json([
                 'status_code' => 404,
-                'message' => 'Failed to retrieve practices.'
+                'message' => 'Failed to retrieve practices. '
             ], 404);
         }
     }
