@@ -193,10 +193,6 @@ class PracticeController extends Controller
      */
     public function getAllPracitcesBySubCategoryUser(Request $request)
     {
-        return response()->json([
-            'status_code' => 400,
-            'message' => $request->all()
-        ], 400);
 
 
         $validator = Validator::make($request->all(), [
